@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './App.css'; // Import a CSS file for styling
 
 const API_URL = 'https://your-deployed-api-url/bfhl'; // Replace with your API URL
 
@@ -51,16 +52,20 @@ function App() {
   };
 
   return (
-    <div>
-      <h1>REST API Frontend</h1>
-      <form onSubmit={handleFormSubmit}>
-        <label>Enter JSON data:</label>
-        <input type="text" value={inputData} onChange={handleInputChange} />
-        <button type="submit">Submit</button>
-      </form>
-      {error && <p>{error}</p>}
+    <div className="app">
+      <header className="header">
+        <h1>REST API Frontend</h1>
+      </header>
+      <div className="form-container">
+        <form onSubmit={handleFormSubmit}>
+          <label htmlFor="inputData">Enter JSON data:</label>
+          <input type="text" id="inputData" value={inputData} onChange={handleInputChange} />
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+      {error && <p className="error">{error}</p>}
       {responseData && (
-        <div>
+        <div className="response-container">
           <h2>Response:</h2>
           <ul>
             {selectedOptions.map(option => (
@@ -71,7 +76,7 @@ function App() {
           </ul>
         </div>
       )}
-      <div>
+      <div className="options-container">
         <h2>Select options to display:</h2>
         <input type="checkbox" id="numbers" value="numbers" checked={selectedOptions.includes('numbers')} onChange={handleOptionChange} />
         <label htmlFor="numbers">Numbers</label>
