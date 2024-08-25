@@ -1,52 +1,87 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const app = express();
-const port = process.env.PORT || 3000;
+const API_URL = 'https://your-deployed-api-url/bfhl'; // Replace with your API URL
 
-app.use(bodyParser.json());
+function App() {
+  const [inputData, setInputData] = useState('');
+  const [responseData, setResponseData] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [error, setError] = useState(null);
 
-// Function to find the highest lowercase alphabet
-function findHighestLowercase(alphabets) {
-  const lowercases = alphabets.filter(char => char.toLowerCase() === char);
-  return lowercases.length > 0 ? lowercases.slice(-1)[0] : [];
+  useEffect(() => {
+    document.title = "21BCY10200";
+  }, []);
+
+  const handleInputChange = (event) => {
+    setInputData(event.target.value);
+  };
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+    setError(null);
+
+    try {
+      const response = await axios.post(API_URL, JSON.parse(inputData));
+      setResponseData(response.data);
+      const filteredData = filterResponseData(response.data, selectedOptions); // Call filtering function
+      setResponseData(filteredData);
+    } catch (error) {
+      console.error(error);
+      setError('Error processing request');
+    }
+  };
+
+  const handleOptionChange = (event) => {
+    setSelectedOptions(event.target.value);
+  };
+
+  const filterResponseData = (data, options) => {
+    const filtered = {};
+    if (options.includes('numbers')) {
+      filtered.numbers = data.numbers;
+    }
+    if (options.includes('alphabets')) {
+      filtered.alphabets = data.alphabets;
+    }
+    if (options.includes('highest_lowercase_alphabet')) {
+      filtered.highest_lowercase_alphabet = data.highest_lowercase_alphabet;
+    }
+    return filtered;
+  };
+
+  return (
+    <div>
+      <h1>REST API Frontend</h1>
+      <form onSubmit={handleFormSubmit}>
+        <label>Enter JSON data:</label>
+        <input type="text" value={inputData} onChange={handleInputChange} />
+        <button type="submit">Submit</button>
+      </form>
+      {error && <p>{error}</p>}
+      {responseData && (
+        <div>
+          <h2>Response:</h2>
+          <ul>
+            {selectedOptions.map(option => (
+              <li key={option}>
+                {option}: {JSON.stringify(responseData[option])}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div>
+        <h2>Select options to display:</h2>
+        <input type="checkbox" id="numbers" value="numbers" checked={selectedOptions.includes('numbers')} onChange={handleOptionChange} />
+        <label htmlFor="numbers">Numbers</label>
+        <input type="checkbox" id="alphabets" value="alphabets" checked={selectedOptions.includes('alphabets')} onChange={handleOptionChange} />
+        <label htmlFor="alphabets">Alphabets</label>
+        <input type="checkbox" id="highest_lowercase_alphabet" value="highest_lowercase_alphabet" checked={selectedOptions.includes('highest_lowercase_alphabet')} onChange={handleOptionChange} />
+        <label htmlFor="highest_lowercase_alphabet">Highest Lowercase Alphabet</label>
+      </div>
+    </div>
+  );
 }
 
-// POST /bfhl endpoint
-app.post('/bfhl', async (req, res) => {
-  const data = req.body.data || [];
-  const numbers = data.filter(item => !isNaN(item));
-  const alphabets = data.filter(item => isNaN(item));
-
-  try {
-    const highestLowercase = findHighestLowercase(alphabets);
-
-    // Replace with your logic to generate user_id, email, and roll_number
-    const user_id = "john_doe_17091999";
-    const email = "john@xyz.com";
-    const roll_number = "ABCD123";
-
-    res.json({
-      is_success: true,
-      user_id,
-      email,
-      roll_number,
-      numbers,
-      alphabets,
-      highest_lowercase_alphabet: highestLowercase,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ is_success: false, error: 'Internal Server Error' });
-  }
-});
-
-// GET /bfhl endpoint
-app.get('/bfhl', (req, res) => {
-  res.json({ operation_code: 1 });
-});
-
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+export default App;
